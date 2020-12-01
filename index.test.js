@@ -18,7 +18,7 @@ describe("Find latest opportunites", () => {
       .get("/digital-outcomes-and-specialists/opportunities")
       .reply(200, fixture);
 
-    data = await oppFinder.findLatestOpportunities(url, dateFrom);
+    data = await oppFinder.findOpportunitiesOnPage(url, dateFrom);
   });
 
   it("should gather the opportunities from the page", () => {
@@ -70,7 +70,21 @@ describe("Find latest opportunites", () => {
   });
 });
 
-/*describe("Find all opportunites", () => {
+describe("Find total pages of opportunites", () => {
+  it("should return the number of pages of opportunities", async () => {
+    const fixture = fs
+      .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
+      .toString();
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities")
+      .reply(200, fixture);
+
+    const total = await oppFinder.totalNumberOfPages();
+    expect(total).toEqual(4);
+  });
+});
+
+describe("Find all opportunites", () => {
   it("should find all the opportunites", async () => {
     const page1 = fs
       .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
@@ -102,20 +116,6 @@ describe("Find latest opportunites", () => {
       .reply(200, page4);
 
     const data = await oppFinder.findAllOpportunities();
-    expect(data.length).toEqual(145);
-  });
-});*/
-
-describe("Find total pages of opportunites", () => {
-  it("should return the number of pages of opportunities", async () => {
-    const fixture = fs
-      .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
-      .toString();
-    nock("https://www.digitalmarketplace.service.gov.uk")
-      .get("/digital-outcomes-and-specialists/opportunities")
-      .reply(200, fixture);
-
-    const total = await oppFinder.totalNumberOfPages();
-    expect(total).toEqual(4);
+    expect(data.length).toEqual(117);
   });
 });
