@@ -1,6 +1,6 @@
 const osmosis = require("osmosis");
 
-function findOpportunities() {
+function findLatestOpportunities(dateFrom) {
   return new Promise((resolve) => {
     let opportunities = [];
     osmosis
@@ -31,8 +31,9 @@ function findOpportunities() {
       .data(
         (x) => (x.closingDate = Date.parse(x.closingDate.match(/\d+ \w+ \d+/)))
       )
+      .data((x) => (x.id = parseInt(x.link.match(/\d+/).pop())))
       .data((x) => {
-        opportunities.push(x);
+        if (x.publishedDate > dateFrom) opportunities.push(x);
       })
       .done(() => resolve(opportunities));
   });
@@ -41,5 +42,5 @@ function findOpportunities() {
 // findOpportunities().then((opportunity) => console.log(opportunity));
 
 module.exports = {
-  findOpportunities,
+  findLatestOpportunities,
 };
