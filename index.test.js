@@ -2,20 +2,23 @@ const oppFinder = require("./index");
 const nock = require("nock");
 const fs = require("fs");
 const { join } = require("path");
+const { data } = require("osmosis");
 
 describe("Find latest opportunites", () => {
   const dateFrom = 1606435199000; //26 November 2020 23:59:59
+  const url =
+    "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
   let data;
   beforeEach(async () => {
     const fixture = fs
-      .readFileSync(join(__dirname, "fixtures/test.html"), "utf-8")
+      .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
       .toString();
 
     nock("https://www.digitalmarketplace.service.gov.uk")
       .get("/digital-outcomes-and-specialists/opportunities")
       .reply(200, fixture);
 
-    data = await oppFinder.findLatestOpportunities(dateFrom);
+    data = await oppFinder.findLatestOpportunities(url, dateFrom);
   });
 
   it("should gather the opportunities from the page", () => {
@@ -64,5 +67,55 @@ describe("Find latest opportunites", () => {
 
   it("should not return opportunities we've already seen", () => {
     expect(data.length).toEqual(4);
+  });
+});
+
+/*describe("Find all opportunites", () => {
+  it("should find all the opportunites", async () => {
+    const page1 = fs
+      .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
+      .toString();
+    const page2 = fs
+      .readFileSync(join(__dirname, "fixtures/test.page2.html"), "utf-8")
+      .toString();
+    const page3 = fs
+      .readFileSync(join(__dirname, "fixtures/test.page3.html"), "utf-8")
+      .toString();
+    const page4 = fs
+      .readFileSync(join(__dirname, "fixtures/test.page4.html"), "utf-8")
+      .toString();
+
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities?page=1")
+      .reply(200, page1);
+
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities?page=2")
+      .reply(200, page2);
+
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities?page=3")
+      .reply(200, page3);
+
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities?page=4")
+      .reply(200, page4);
+
+    const data = await oppFinder.findAllOpportunities();
+    expect(data.length).toEqual(145);
+  });
+});*/
+
+describe("Find total pages of opportunites", () => {
+  it("should return the number of pages of opportunities", async () => {
+    const fixture = fs
+      .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
+      .toString();
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities")
+      .reply(200, fixture);
+
+    const total = await oppFinder.totalNumberOfPages();
+    expect(total).toEqual(4);
   });
 });

@@ -1,12 +1,13 @@
 const osmosis = require("osmosis");
 
-function findLatestOpportunities(dateFrom) {
+const base_url =
+  "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
+
+function findLatestOpportunities(url, dateFrom) {
   return new Promise((resolve) => {
     let opportunities = [];
     osmosis
-      .get(
-        "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities"
-      )
+      .get(url)
       .find('//*[@id="js-dm-live-search-results"]/ul/li')
       .set({
         title: "h2/a",
@@ -39,8 +40,37 @@ function findLatestOpportunities(dateFrom) {
   });
 }
 
+async function findAllOpportunities() {
+  let findAllOpportunities = [];
+  var totlPages = totalNumberOfPages();
+  for (i = totalNumberOfPages; i > 0; i--) {
+    findAllOpportunities.push(
+      findLatestOpportunities(base_url + "/?page=" + i)
+    );
+  }
+}
+
 // findOpportunities().then((opportunity) => console.log(opportunity));
+
+function totalNumberOfPages() {
+  return new Promise((resolve) => {
+    let total;
+    osmosis
+      .get(base_url)
+      .find('//*[@id="js-dm-live-search-results"]/nav/ul/li/a/span[3]')
+      .set("total")
+      .data((x) => {
+        console.log("****HELLO*****");
+        total = parseInt(x.total.match(/\d+ of (\d+)/).pop());
+      })
+      .done(() => resolve(total));
+  });
+}
 
 module.exports = {
   findLatestOpportunities,
+  findAllOpportunities,
+  totalNumberOfPages,
 };
+
+//totalNumberOfPages().then((total) => console.log(total));
