@@ -5,7 +5,7 @@ const base_url =
 
 function findOpportunitiesOnPage(url, dateFrom) {
   return new Promise((resolve) => {
-    let opportunities = [];
+    const opportunities = [];
     osmosis
       .get(url)
       .find('//*[@id="js-dm-live-search-results"]/ul/li')
@@ -22,21 +22,13 @@ function findOpportunitiesOnPage(url, dateFrom) {
       .data((x) => {
         if (x.publishedDate)
           x.publishedDate = Date.parse(x.publishedDate.match(/\d+ \w+ \d+/));
-      })
-      .data((x) => {
-        if (x.questionsDeadlineDate) {
+        if (x.questionsDeadlineDate)
           x.questionsDeadlineDate = Date.parse(
             x.questionsDeadlineDate.match(/\d+ \w+ \d+/)
           );
-        }
-      })
-      .data((x) => {
-        if (x.closingDate) {
+        if (x.closingDate)
           x.closingDate = Date.parse(x.closingDate.match(/\d+ \w+ \d+/));
-        }
-      })
-      .data((x) => (x.id = parseInt(x.link.match(/\d+/).pop())))
-      .data((x) => {
+        x.id = parseInt(x.link.match(/\d+/).pop());
         if (!x.publishedDate || x.publishedDate > dateFrom)
           opportunities.push(x);
       })
@@ -45,7 +37,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
 }
 
 async function findAllOpportunities() {
-  let allOpportunities = [];
+  const allOpportunities = [];
   const totalPages = await totalNumberOfPages();
   for (i = 4; i > 0; i--) {
     const opportunities = await findOpportunitiesOnPage(
