@@ -1,12 +1,13 @@
 const osmosis = require("osmosis");
 
-function findLatestOpportunities(dateFrom) {
+const base_url =
+  "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
+
+function findOpportunitiesOnPage(url, dateFrom) {
   return new Promise((resolve) => {
-    let opportunities = [];
+    const opportunities = [];
     osmosis
-      .get(
-        "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities"
-      )
+      .get(url)
       .find('//*[@id="js-dm-live-search-results"]/ul/li')
       .set({
         title: "h2/a",
@@ -18,29 +19,56 @@ function findLatestOpportunities(dateFrom) {
         questionsDeadlineDate: "ul[3]/li[2]",
         closingDate: "ul[3]/li[3]",
       })
-      .data(
-        (x) =>
-          (x.publishedDate = Date.parse(x.publishedDate.match(/\d+ \w+ \d+/)))
-      )
-      .data(
-        (x) =>
-          (x.questionsDeadlineDate = Date.parse(
-            x.questionsDeadlineDate.match(/\d+ \w+ \d+/)
-          ))
-      )
-      .data(
-        (x) => (x.closingDate = Date.parse(x.closingDate.match(/\d+ \w+ \d+/)))
-      )
-      .data((x) => (x.id = parseInt(x.link.match(/\d+/).pop())))
       .data((x) => {
-        if (x.publishedDate > dateFrom) opportunities.push(x);
+        if (x.publishedDate)
+          x.publishedDate = Date.parse(x.publishedDate.match(/\d+ \w+ \d+/));
+        if (x.questionsDeadlineDate)
+          x.questionsDeadlineDate = Date.parse(
+            x.questionsDeadlineDate.match(/\d+ \w+ \d+/)
+          );
+        if (x.closingDate)
+          x.closingDate = Date.parse(x.closingDate.match(/\d+ \w+ \d+/));
+        x.id = parseInt(x.link.match(/\d+/).pop());
+        if (!x.publishedDate || x.publishedDate > dateFrom)
+          opportunities.push(x);
       })
       .done(() => resolve(opportunities));
   });
 }
 
-// findOpportunities().then((opportunity) => console.log(opportunity));
+async function findAllOpportunities() {
+  const allOpportunities = [];
+  const totalPages = await totalNumberOfPages();
+  for (i = 4; i > 0; i--) {
+    const opportunities = await findOpportunitiesOnPage(
+      base_url + "?page=" + i,
+      0
+    );
+    opportunities.map((x) => allOpportunities.push(x));
+  }
+  return allOpportunities;
+}
+
+//findAllOpportunities().then((opportunity) => console.log(opportunity));
+
+function totalNumberOfPages() {
+  return new Promise((resolve) => {
+    let total;
+    osmosis
+      .get(base_url)
+      .find('//*[@id="js-dm-live-search-results"]/nav/ul/li/a/span[3]')
+      .set("total")
+      .data((x) => {
+        total = parseInt(x.total.match(/\d+ of (\d+)/).pop());
+      })
+      .done(() => resolve(total));
+  });
+}
 
 module.exports = {
-  findLatestOpportunities,
+  findOpportunitiesOnPage,
+  findAllOpportunities,
+  totalNumberOfPages,
 };
+
+//totalNumberOfPages().then((total) => console.log(total));
