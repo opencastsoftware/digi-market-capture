@@ -119,3 +119,10 @@ describe("Find all opportunites", () => {
     expect(data.length).toEqual(117);
   });
 });
+
+describe("lamdba handler", () => {
+  it("should return a status of 200", async () => {
+    const response = await oppFinder.handler({});
+    expect(response.statusCode).toEqual(200);
+  });
+});
