@@ -116,6 +116,7 @@ function convertDataToMessage(data) {
 }
 
 const handler = async (event) => {
+  console.log("finding opportunities from today: " + Date.now());
   const opps = findOpportunitiesOnPage(base_url, Date.now());
   opps.then((x) =>
     x.map((opp) => {
