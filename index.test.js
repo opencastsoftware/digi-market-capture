@@ -128,7 +128,7 @@ describe("Find all opportunites", () => {
 describe("lamdba handler", () => {
   oppFinder.sqs.sendMessage = jest.fn();
 
-  jest.spyOn(global.Date, "now").mockImplementation(() => 1606435199000);
+  jest.spyOn(global.Date, "now").mockImplementation(() => 1606521599000);
 
   const fixture = fs
     .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")

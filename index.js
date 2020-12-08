@@ -116,7 +116,7 @@ function convertDataToMessage(data) {
 }
 
 const handler = async (event) => {
-  const yesterday = Date.now() - 8640000;
+  const yesterday = Date.now() - 86400000;
   console.log("finding opportunities from today: " + yesterday);
   const opps = findOpportunitiesOnPage(base_url, yesterday);
   opps.then((x) =>
