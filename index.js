@@ -37,7 +37,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
         x.id = parseInt(x.link.match(/\d+/).pop());
         if (!x.publishedDate || x.publishedDate > dateFrom)
           opportunities.push(x);
-        //console.log(x);
+        console.log(x);
       })
       .done(() => resolve(opportunities));
   });
