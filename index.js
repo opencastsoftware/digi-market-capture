@@ -1,4 +1,7 @@
 const osmosis = require("osmosis");
+const AWS = require("aws-sdk");
+AWS.config.update({ region: "eu-west-2" });
+const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 const base_url =
   "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
@@ -31,6 +34,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
         x.id = parseInt(x.link.match(/\d+/).pop());
         if (!x.publishedDate || x.publishedDate > dateFrom)
           opportunities.push(x);
+        //console.log(x);
       })
       .done(() => resolve(opportunities));
   });
@@ -39,7 +43,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
 async function findAllOpportunities() {
   const allOpportunities = [];
   const totalPages = await totalNumberOfPages();
-  for (i = 4; i > 0; i--) {
+  for (let i = totalPages; i > 0; i--) {
     const opportunities = await findOpportunitiesOnPage(
       base_url + "?page=" + i,
       0
@@ -65,10 +69,69 @@ function totalNumberOfPages() {
   });
 }
 
+function convertDataToMessage(data) {
+  return {
+    DelaySeconds: 10,
+    MessageAttributes: {
+      Title: {
+        DataType: "String",
+        StringValue: data.title,
+      },
+      Link: {
+        DataType: "String",
+        StringValue: data.link,
+      },
+      Organisation: {
+        DataType: "String",
+        StringValue: data.organisation,
+      },
+      Location: {
+        DataType: "String",
+        StringValue: data.location,
+      },
+      Type: {
+        DataType: "String",
+        StringValue: data.type,
+      },
+      ID: {
+        DataType: "Number",
+        StringValue: data.id,
+      },
+      PublishedDate: {
+        DataType: "Number",
+        StringValue: data.publishedDate.toString(),
+      },
+      QuestionsDeadlineDate: {
+        DataType: "Number",
+        StringValue: data.questionsDeadlineDate.toString(),
+      },
+      ClosingDate: {
+        DataType: "Number",
+        StringValue: data.closingDate.toString(),
+      },
+    },
+    MessageBody: data.title,
+    QueueUrl: process.env.SQS_QUEUE_URL.toString(),
+  };
+}
+
 const handler = async (event) => {
+  const opps = findOpportunitiesOnPage(base_url, Date.now());
+  opps.then((x) =>
+    x.map((opp) => {
+      const message = convertDataToMessage(opp);
+      sqs.sendMessage(message, function (err, data) {
+        if (err) {
+          console.log("Error", err);
+        } else {
+          console.log("Success", data.MessageId);
+        }
+      });
+    })
+  );
   const response = {
-    statusCode: 200,
-    body: JSON.stringify("Hello from Lambda and Github!"),
+    statusCode: 201,
+    body: JSON.stringify("Finding the new opportunities!"),
   };
   return response;
 };
@@ -77,7 +140,9 @@ module.exports = {
   findOpportunitiesOnPage,
   findAllOpportunities,
   totalNumberOfPages,
+  convertDataToMessage,
   handler,
+  sqs,
 };
 
 //totalNumberOfPages().then((total) => console.log(total));
