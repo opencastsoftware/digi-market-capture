@@ -39,7 +39,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
           opportunities.push(x);
         //console.log(x);
       })
-      .error((err) => console.log(error))
+      .error((err) => console.log(err))
       .done(() => resolve(opportunities));
   });
 }
@@ -99,7 +99,7 @@ function convertDataToMessage(data) {
       },
       ID: {
         DataType: "Number",
-        StringValue: data.id,
+        StringValue: data.id.toString(),
       },
       PublishedDate: {
         DataType: "Number",
@@ -121,26 +121,26 @@ function convertDataToMessage(data) {
 
 const handler = async (event) => {
   const yesterday = Date.now() - 86400000 * 2;
-  console.log("finding opportunities from last 24 hours: " + yesterday);
-  const opps = findOpportunitiesOnPage(base_url, yesterday);
-  opps.then((x) =>
-    x.map((opp) => {
-      const message = convertDataToMessage(opp);
-      sqs.sendMessage(message, function (err, data) {
-        if (err) {
-          console.log("Error", err);
-        } else {
-          console.log("Success", data.MessageId);
-        }
-      });
-    })
-  );
+  console.log("finding opportunities from last 48 hours: " + yesterday);
+  const opps = await findOpportunitiesOnPage(base_url, yesterday);
+  opps.map((opp) => {
+    const message = convertDataToMessage(opp);
+    sqs.sendMessage(message, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+      } else {
+        console.log("Success", data.MessageId);
+      }
+    });
+  });
   const response = {
     statusCode: 201,
     body: JSON.stringify("Finding the new opportunities!"),
   };
   return response;
 };
+
+//handler({});
 
 module.exports = {
   findOpportunitiesOnPage,

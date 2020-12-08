@@ -204,7 +204,7 @@ describe("convert data to SQS message", () => {
 
   it("should set the ID", () => {
     expect(message.MessageAttributes.ID.DataType).toEqual("Number");
-    expect(message.MessageAttributes.ID.StringValue).toEqual(13525);
+    expect(message.MessageAttributes.ID.StringValue).toEqual("13525");
   });
 
   it("should set the published date", () => {
