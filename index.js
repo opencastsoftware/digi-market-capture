@@ -126,6 +126,7 @@ const handler = async (event) => {
   console.log("OPPS: " + opps.length);
   opps.map((opp) => {
     const message = convertDataToMessage(opp);
+    console.log("MESSAGE: " + message.MessageBody);
     sqs.sendMessage(message, function (err, data) {
       if (err) {
         console.log("Error", err);
