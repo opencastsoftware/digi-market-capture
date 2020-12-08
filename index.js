@@ -7,6 +7,9 @@ const base_url =
   "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
 
 function findOpportunitiesOnPage(url, dateFrom) {
+  console.log(
+    "finding opportunities [url: " + url + " dateFrom: " + dateFrom + "]"
+  );
   return new Promise((resolve) => {
     const opportunities = [];
     osmosis
@@ -117,7 +120,7 @@ function convertDataToMessage(data) {
 
 const handler = async (event) => {
   const yesterday = Date.now() - 86400000;
-  console.log("finding opportunities from today: " + yesterday);
+  console.log("finding opportunities from last 24 hours: " + yesterday);
   const opps = findOpportunitiesOnPage(base_url, yesterday);
   opps.then((x) =>
     x.map((opp) => {
