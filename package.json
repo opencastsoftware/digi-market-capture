@@ -9,10 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.805.0",
     "jest": "^26.6.3",
     "osmosis": "^1.1.10"
   },
   "devDependencies": {
     "nock": "^13.0.5"
+  },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/jest/setEnvVars.js"
+    ]
   }
 }

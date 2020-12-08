@@ -3,6 +3,7 @@ const nock = require("nock");
 const fs = require("fs");
 const { join } = require("path");
 const { data } = require("osmosis");
+const AWS = require("aws-sdk");
 
 describe("Find latest opportunites", () => {
   const dateFrom = 1606435199000; //26 November 2020 23:59:59
@@ -120,9 +121,112 @@ describe("Find all opportunites", () => {
   });
 });
 
-describe("lamdba handler", () => {
-  it("should return a status of 200", async () => {
-    const response = await oppFinder.handler({});
-    expect(response.statusCode).toEqual(200);
+/*describe("lamdba handler", () => {
+  AWS.SQS = jest.fn();
+
+  jest.spyOn(global.Date, "now").mockImplementationOnce(() => 1606435199000);
+
+  //const response = await oppFinder.handler({});
+
+  it("should return a status of 201", async () => {
+    expect(response.statusCode).toEqual(201);
+  });
+
+  it("should send new opportunities to the queue", () => {
+    expect(AWS.SQS.mock.calls.length).toEqual(4);
+  });
+});*/
+
+describe("convert data to SQS message", () => {
+  const data = {
+    title:
+      "Android App to run an offline library against substances, local and in real time",
+    link: "/digital-outcomes-and-specialists/opportunities/13525",
+    organisation: "Defence Science Technology Laboratory",
+    location: "Off-site",
+    type: "Digital outcomes",
+    publishedDate: 1605744000000,
+    questionsDeadlineDate: 1606348800000,
+    closingDate: 1606953600000,
+    id: 13525,
+  };
+
+  console.log(data);
+
+  const message = oppFinder.convertDataToMessage(data);
+
+  it("should set the title", () => {
+    expect(message.MessageAttributes.Title.DataType).toEqual("String");
+    expect(message.MessageAttributes.Title.StringValue).toEqual(
+      "Android App to run an offline library against substances, local and in real time"
+    );
+  });
+
+  it("should set the link", () => {
+    expect(message.MessageAttributes.Link.DataType).toEqual("String");
+    expect(message.MessageAttributes.Link.StringValue).toEqual(
+      "/digital-outcomes-and-specialists/opportunities/13525"
+    );
+  });
+
+  it("should set the organisation", () => {
+    expect(message.MessageAttributes.Organisation.DataType).toEqual("String");
+    expect(message.MessageAttributes.Organisation.StringValue).toEqual(
+      "Defence Science Technology Laboratory"
+    );
+  });
+
+  it("should set the location", () => {
+    expect(message.MessageAttributes.Location.DataType).toEqual("String");
+    expect(message.MessageAttributes.Location.StringValue).toEqual("Off-site");
+  });
+
+  it("should set the type", () => {
+    expect(message.MessageAttributes.Type.DataType).toEqual("String");
+    expect(message.MessageAttributes.Type.StringValue).toEqual(
+      "Digital outcomes"
+    );
+  });
+
+  it("should set the ID", () => {
+    expect(message.MessageAttributes.ID.DataType).toEqual("Number");
+    expect(message.MessageAttributes.ID.StringValue).toEqual(13525);
+  });
+
+  it("should set the published date", () => {
+    expect(message.MessageAttributes.PublishedDate.DataType).toEqual("Number");
+    expect(message.MessageAttributes.PublishedDate.StringValue).toEqual(
+      1605744000000
+    );
+  });
+
+  it("should set the questions deadline date", () => {
+    expect(message.MessageAttributes.QuestionsDeadlineDate.DataType).toEqual(
+      "Number"
+    );
+    expect(message.MessageAttributes.QuestionsDeadlineDate.StringValue).toEqual(
+      1606348800000
+    );
+  });
+
+  it("should set the closing date", () => {
+    expect(message.MessageAttributes.ClosingDate.DataType).toEqual("Number");
+    expect(message.MessageAttributes.ClosingDate.StringValue).toEqual(
+      1606953600000
+    );
+  });
+
+  it("should set the delay seconds", () => {
+    expect(message.DelaySeconds).toEqual(10);
+  });
+
+  it("should set the queue url from the environment variable", () => {
+    expect(message.QueueUrl).toEqual("//sqsqueue/TestQueue");
+  });
+
+  it("should set the message body", () => {
+    expect(message.MessageBody).toEqual(
+      "Android App to run an offline library against substances, local and in real time"
+    );
   });
 });

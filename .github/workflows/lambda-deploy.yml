@@ -1,5 +1,5 @@
 name: Deploy to AWS Lambda
-on: 
+on:
   push:
     branches: [main]
 jobs:
@@ -21,6 +21,7 @@ jobs:
           npm run build --if-present
         env:
           CI: true
+          SQS_QUEUE_URL: ${{ secrets.SQS_QUEUE_URL }}
       - name: zip
         uses: montudor/action-zip@v0.1.0
         with:
@@ -31,5 +32,5 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: eu-west-2
-          function_name: helloWorld
+          function_name: findNewDigiMarketOpportunities
           zip_file: bundle.zip

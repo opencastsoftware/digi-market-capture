@@ -31,6 +31,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
         x.id = parseInt(x.link.match(/\d+/).pop());
         if (!x.publishedDate || x.publishedDate > dateFrom)
           opportunities.push(x);
+        //console.log(x);
       })
       .done(() => resolve(opportunities));
   });
@@ -65,9 +66,57 @@ function totalNumberOfPages() {
   });
 }
 
+function convertDataToMessage(data) {
+  return {
+    DelaySeconds: 10,
+    MessageAttributes: {
+      Title: {
+        DataType: "String",
+        StringValue: data.title,
+      },
+      Link: {
+        DataType: "String",
+        StringValue: data.link,
+      },
+      Organisation: {
+        DataType: "String",
+        StringValue: data.organisation,
+      },
+      Location: {
+        DataType: "String",
+        StringValue: data.location,
+      },
+      Type: {
+        DataType: "String",
+        StringValue: data.type,
+      },
+      ID: {
+        DataType: "Number",
+        StringValue: data.id,
+      },
+      PublishedDate: {
+        DataType: "Number",
+        StringValue: data.publishedDate,
+      },
+      QuestionsDeadlineDate: {
+        DataType: "Number",
+        StringValue: data.questionsDeadlineDate,
+      },
+      ClosingDate: {
+        DataType: "Number",
+        StringValue: data.closingDate,
+      },
+    },
+    MessageBody: data.title,
+    QueueUrl: process.env.SQS_QUEUE_URL,
+  };
+}
+
 const handler = async (event) => {
+  const opps = findOpportunitiesOnPage(base_url, Date.now());
+
   const response = {
-    statusCode: 200,
+    statusCode: 201,
     body: JSON.stringify("Hello from Lambda and Github!"),
   };
   return response;
@@ -77,6 +126,7 @@ module.exports = {
   findOpportunitiesOnPage,
   findAllOpportunities,
   totalNumberOfPages,
+  convertDataToMessage,
   handler,
 };
 
