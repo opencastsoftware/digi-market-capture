@@ -135,6 +135,7 @@ const handler = async (event) => {
       }
     });
   });
+  console.log("FINISHED");
   const response = {
     statusCode: 201,
     body: JSON.stringify("Finding the new opportunities!"),
