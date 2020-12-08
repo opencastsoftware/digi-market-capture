@@ -101,6 +101,10 @@ describe("Find all opportunites", () => {
       .toString();
 
     nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities")
+      .reply(200, page1);
+
+    nock("https://www.digitalmarketplace.service.gov.uk")
       .get("/digital-outcomes-and-specialists/opportunities?page=1")
       .reply(200, page1);
 
@@ -121,21 +125,32 @@ describe("Find all opportunites", () => {
   });
 });
 
-/*describe("lamdba handler", () => {
-  AWS.SQS = jest.fn();
+describe("lamdba handler", () => {
+  oppFinder.sqs.sendMessage = jest.fn();
 
-  jest.spyOn(global.Date, "now").mockImplementationOnce(() => 1606435199000);
+  jest.spyOn(global.Date, "now").mockImplementation(() => 1606435199000);
 
-  //const response = await oppFinder.handler({});
+  const fixture = fs
+    .readFileSync(join(__dirname, "fixtures/test.page1.html"), "utf-8")
+    .toString();
+
+  beforeEach(async () => {
+    nock("https://www.digitalmarketplace.service.gov.uk")
+      .get("/digital-outcomes-and-specialists/opportunities")
+      .reply(200, fixture);
+  });
 
   it("should return a status of 201", async () => {
+    const response = await oppFinder.handler({});
     expect(response.statusCode).toEqual(201);
   });
 
-  it("should send new opportunities to the queue", () => {
-    expect(AWS.SQS.mock.calls.length).toEqual(4);
+  it("should send new opportunities to the queue", async () => {
+    const response = await oppFinder.handler({});
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(oppFinder.sqs.sendMessage.mock.calls.length).toEqual(8);
   });
-});*/
+});
 
 describe("convert data to SQS message", () => {
   const data = {
@@ -150,8 +165,6 @@ describe("convert data to SQS message", () => {
     closingDate: 1606953600000,
     id: 13525,
   };
-
-  console.log(data);
 
   const message = oppFinder.convertDataToMessage(data);
 
@@ -196,7 +209,7 @@ describe("convert data to SQS message", () => {
   it("should set the published date", () => {
     expect(message.MessageAttributes.PublishedDate.DataType).toEqual("Number");
     expect(message.MessageAttributes.PublishedDate.StringValue).toEqual(
-      1605744000000
+      "1605744000000"
     );
   });
 
@@ -205,14 +218,14 @@ describe("convert data to SQS message", () => {
       "Number"
     );
     expect(message.MessageAttributes.QuestionsDeadlineDate.StringValue).toEqual(
-      1606348800000
+      "1606348800000"
     );
   });
 
   it("should set the closing date", () => {
     expect(message.MessageAttributes.ClosingDate.DataType).toEqual("Number");
     expect(message.MessageAttributes.ClosingDate.StringValue).toEqual(
-      1606953600000
+      "1606953600000"
     );
   });
 

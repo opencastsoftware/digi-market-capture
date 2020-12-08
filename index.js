@@ -1,4 +1,7 @@
 const osmosis = require("osmosis");
+const AWS = require("aws-sdk");
+AWS.config.update({ region: "eu-west-2" });
+const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 const base_url =
   "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
@@ -40,7 +43,7 @@ function findOpportunitiesOnPage(url, dateFrom) {
 async function findAllOpportunities() {
   const allOpportunities = [];
   const totalPages = await totalNumberOfPages();
-  for (i = 4; i > 0; i--) {
+  for (let i = totalPages; i > 0; i--) {
     const opportunities = await findOpportunitiesOnPage(
       base_url + "?page=" + i,
       0
@@ -96,28 +99,40 @@ function convertDataToMessage(data) {
       },
       PublishedDate: {
         DataType: "Number",
-        StringValue: data.publishedDate,
+        StringValue: data.publishedDate.toString(),
       },
       QuestionsDeadlineDate: {
         DataType: "Number",
-        StringValue: data.questionsDeadlineDate,
+        StringValue: data.questionsDeadlineDate.toString(),
       },
       ClosingDate: {
         DataType: "Number",
-        StringValue: data.closingDate,
+        StringValue: data.closingDate.toString(),
       },
     },
     MessageBody: data.title,
-    QueueUrl: process.env.SQS_QUEUE_URL,
+    QueueUrl: process.env.SQS_QUEUE_URL.toString(),
   };
 }
 
 const handler = async (event) => {
   const opps = findOpportunitiesOnPage(base_url, Date.now());
-
+  opps.then((x) =>
+    x.map((opp) => {
+      const message = convertDataToMessage(opp);
+      console.log(message);
+      sqs.sendMessage(message, function (err, data) {
+        if (err) {
+          console.log("Error", err);
+        } else {
+          console.log("Success", data.MessageId);
+        }
+      });
+    })
+  );
   const response = {
     statusCode: 201,
-    body: JSON.stringify("Hello from Lambda and Github!"),
+    body: JSON.stringify("Finding the new opportunities!"),
   };
   return response;
 };
@@ -128,6 +143,7 @@ module.exports = {
   totalNumberOfPages,
   convertDataToMessage,
   handler,
+  sqs,
 };
 
 //totalNumberOfPages().then((total) => console.log(total));
