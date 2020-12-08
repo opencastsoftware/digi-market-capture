@@ -148,7 +148,8 @@ describe("lamdba handler", () => {
   it("should send new opportunities to the queue", async () => {
     const response = await oppFinder.handler({});
     await new Promise((r) => setTimeout(r, 2000));
-    expect(oppFinder.sqs.sendMessage.mock.calls.length).toEqual(8);
+    //expect(oppFinder.sqs.sendMessage.mock.calls.length).toEqual(8);
+    expect(oppFinder.sqs.sendMessage.mock.calls.length).toEqual(22);
   });
 });
 

@@ -37,8 +37,9 @@ function findOpportunitiesOnPage(url, dateFrom) {
         x.id = parseInt(x.link.match(/\d+/).pop());
         if (!x.publishedDate || x.publishedDate > dateFrom)
           opportunities.push(x);
-        console.log(x);
+        //console.log(x);
       })
+      .error((err) => console.log(error))
       .done(() => resolve(opportunities));
   });
 }
@@ -119,7 +120,7 @@ function convertDataToMessage(data) {
 }
 
 const handler = async (event) => {
-  const yesterday = Date.now() - 86400000;
+  const yesterday = Date.now() - 86400000 * 2;
   console.log("finding opportunities from last 24 hours: " + yesterday);
   const opps = findOpportunitiesOnPage(base_url, yesterday);
   opps.then((x) =>
@@ -149,5 +150,3 @@ module.exports = {
   handler,
   sqs,
 };
-
-//totalNumberOfPages().then((total) => console.log(total));
