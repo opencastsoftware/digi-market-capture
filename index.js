@@ -122,21 +122,15 @@ function convertDataToMessage(data) {
 
 const handler = async (event) => {
   const yesterday = Date.now() - 86400000 * 3;
-  console.log("finding opportunities from last 72 hours: " + yesterday);
   const opps = await findOpportunitiesOnPage(base_url, yesterday);
   console.log("OPPS: " + opps.length);
-  opps.map((opp) => {
-    console.log(opp);
+  const promises = opps.map(async (opp) => {
     const message = convertDataToMessage(opp);
-    console.log("MESSAGE: " + message.MessageBody);
-    sqs.sendMessage(message, function (err, data) {
-      if (err) {
-        console.log("Error", err);
-      } else {
-        console.log("Success", data.MessageId);
-      }
-    });
+    return sqs.sendMessage(message).promise();
   });
+  Promise.allSettled(promises).then((results) =>
+    results.forEach((result) => console.log("RES", result))
+  );
   console.log("FINISHED");
   const response = {
     statusCode: 201,
