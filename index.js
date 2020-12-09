@@ -26,18 +26,19 @@ function findOpportunitiesOnPage(url, dateFrom) {
         closingDate: "ul[3]/li[3]",
       })
       .data((x) => {
-        if (x.publishedDate)
+        if (x.publishedDate.startsWith("Closed")) {
+          x.publishedDate = 0;
+          x.closingDate = 0;
+          x.questionsDeadlineDate = 0;
+        } else {
           x.publishedDate = Date.parse(x.publishedDate.match(/\d+ \w+ \d+/));
-        if (x.questionsDeadlineDate)
           x.questionsDeadlineDate = Date.parse(
             x.questionsDeadlineDate.match(/\d+ \w+ \d+/)
           );
-        if (x.closingDate)
           x.closingDate = Date.parse(x.closingDate.match(/\d+ \w+ \d+/));
+        }
         x.id = parseInt(x.link.match(/\d+/).pop());
-        if (!x.publishedDate || x.publishedDate > dateFrom)
-          opportunities.push(x);
-        //console.log(x);
+        if (x.publishedDate > dateFrom) opportunities.push(x);
       })
       .error((err) => console.log(err))
       .done(() => resolve(opportunities));
@@ -50,7 +51,7 @@ async function findAllOpportunities() {
   for (let i = totalPages; i > 0; i--) {
     const opportunities = await findOpportunitiesOnPage(
       base_url + "?page=" + i,
-      0
+      -1
     );
     opportunities.map((x) => allOpportunities.push(x));
   }
@@ -125,6 +126,7 @@ const handler = async (event) => {
   const opps = await findOpportunitiesOnPage(base_url, yesterday);
   console.log("OPPS: " + opps.length);
   opps.map((opp) => {
+    console.log(opp);
     const message = convertDataToMessage(opp);
     console.log("MESSAGE: " + message.MessageBody);
     sqs.sendMessage(message, function (err, data) {
