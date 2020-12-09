@@ -121,8 +121,8 @@ function convertDataToMessage(data) {
 }
 
 const handler = async (event) => {
-  const yesterday = Date.now() - 86400000 * 2;
-  console.log("finding opportunities from last 48 hours: " + yesterday);
+  const yesterday = Date.now() - 86400000 * 3;
+  console.log("finding opportunities from last 72 hours: " + yesterday);
   const opps = await findOpportunitiesOnPage(base_url, yesterday);
   console.log("OPPS: " + opps.length);
   opps.map((opp) => {
