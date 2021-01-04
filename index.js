@@ -2,6 +2,7 @@ const osmosis = require("osmosis");
 const AWS = require("aws-sdk");
 AWS.config.update({ region: "eu-west-2" });
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+AWS.config.logger = console;
 
 const base_url =
   "https://www.digitalmarketplace.service.gov.uk/digital-outcomes-and-specialists/opportunities";
