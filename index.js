@@ -125,8 +125,8 @@ const handler = async (event) => {
   const opps = await findOpportunitiesOnPage(base_url, yesterday);
   console.log("OPPS: " + opps.length);
   const promises = opps.map(async (opp) => {
-    console.log(opp);
     const message = convertDataToMessage(opp);
+    console.log(message);
     return sqs.sendMessage(message).promise();
   });
   Promise.allSettled(promises).then((results) =>
