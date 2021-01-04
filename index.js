@@ -129,6 +129,7 @@ const handler = async (event) => {
     console.log(message);
     return sqs.sendMessage(message).promise();
   });
+  console.log("Promises: " + promises.length);
   Promise.allSettled(promises).then((results) =>
     results.forEach((result) => console.log("RES", result))
   );
