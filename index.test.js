@@ -54,18 +54,6 @@ describe("Find latest opportunites", () => {
     expect(data[0].type).toEqual("Digital outcomes");
   });
 
-  it("should set the published date timestamp", () => {
-    expect(data[0].publishedDate).toEqual(1606694400000);
-  });
-
-  it("should set the questions deadline date", () => {
-    expect(data[0].questionsDeadlineDate).toEqual(1607299200000);
-  });
-
-  it("should set the closing date", () => {
-    expect(data[0].closingDate).toEqual(1607904000000);
-  });
-
   it("should not return opportunities we've already seen", () => {
     expect(data.length).toEqual(4);
   });
@@ -205,29 +193,6 @@ describe("convert data to SQS message", () => {
   it("should set the ID", () => {
     expect(message.MessageAttributes.ID.DataType).toEqual("Number");
     expect(message.MessageAttributes.ID.StringValue).toEqual("13525");
-  });
-
-  it("should set the published date", () => {
-    expect(message.MessageAttributes.PublishedDate.DataType).toEqual("Number");
-    expect(message.MessageAttributes.PublishedDate.StringValue).toEqual(
-      "1605744000000"
-    );
-  });
-
-  it("should set the questions deadline date", () => {
-    expect(message.MessageAttributes.QuestionsDeadlineDate.DataType).toEqual(
-      "Number"
-    );
-    expect(message.MessageAttributes.QuestionsDeadlineDate.StringValue).toEqual(
-      "1606348800000"
-    );
-  });
-
-  it("should set the closing date", () => {
-    expect(message.MessageAttributes.ClosingDate.DataType).toEqual("Number");
-    expect(message.MessageAttributes.ClosingDate.StringValue).toEqual(
-      "1606953600000"
-    );
   });
 
   it("should set the delay seconds", () => {
