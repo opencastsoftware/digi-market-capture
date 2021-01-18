@@ -102,8 +102,9 @@ function convertDataToMessage(data) {
 }
 
 const handler = async (event) => {
-  const yesterday = Date.now() - 86400000 * 3;
-  const opps = await findOpportunitiesOnPage(base_url, yesterday);
+  //const yesterday = Date.now() - 86400000 * 3;
+  //const opps = await findOpportunitiesOnPage(base_url, yesterday);
+  const opps = await findAllOpportunities();
   console.log("OPPS: " + opps.length);
   const promises = opps.map(async (opp) => {
     const message = convertDataToMessage(opp);
